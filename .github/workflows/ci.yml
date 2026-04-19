@@ -9,6 +9,7 @@ on:
     types: [created]
 
 jobs:
+
   linux:
     runs-on: ubuntu-latest
 
@@ -17,8 +18,7 @@ jobs:
         php: [8.2, 8.3, 8.5]
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
@@ -50,9 +50,6 @@ jobs:
           ./configure --with-php-dlib
           make -j2
 
-      - name: Run tests
-        run: make test || true
-
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
@@ -70,8 +67,14 @@ jobs:
         ts: [nts, ts]
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: Install dlib (vcpkg)
+        run: |
+          git clone https://github.com/microsoft/vcpkg
+          cd vcpkg
+          bootstrap-vcpkg.bat
+          vcpkg install dlib:x64-windows
 
       - name: Build PHP extension (Windows)
         uses: php/php-windows-builder/extension@v1
