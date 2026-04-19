@@ -22,6 +22,7 @@
 .FBCIndex
 .FBCLockFolder
 .deps
+*.dep
 .libs
 phpt.*
 core
