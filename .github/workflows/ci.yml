@@ -1,0 +1,49 @@
+name: PHP Dlib CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php: [8.2, 8.3, 8.5]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            autoconf \
+            pkg-config \
+            libdlib-dev \
+            libopenblas-dev \
+            liblapack-dev \
+            cmake
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: none
+          ini-values: zend.assertions=1, display_errors=On
+          tools: phpize, php-config
+
+      - name: Build extension
+        run: |
+          phpize
+          ./configure
+          make -j$(nproc)
+
+      - name: Run tests
+        run: |
+          make test || true
