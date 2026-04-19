@@ -1,10 +1,10 @@
 {
-    "name": "arshidkv12/traitify",
+    "name": "mailmug/traitify",
     "type": "php-ext",
     "license": "MIT",
-    "description": "Traitify is a native PHP extension that provides commonly used traits",
+    "description": "PHP extension for the Dlib C++ library (face detection, landmarks, recognition, and clustering).",
     "require": {
-        "php": ">=7.0,<8.6"
+        "php": ">=7.0"
     },
     "php-ext": {
         "extension-name": "traitify"
