@@ -1,4 +1,18 @@
-# PHP Dlib - PHP extension for Dlib
+# PHP-Dlib
+
+PHP extension for the Dlib C++ library (face detection, landmarks, recognition, and clustering).
+
+This project is a fork of the original **pdlib** and extends it with improved build support and modern Dlib versions.
+
+---
+
+## 🚀 Features
+
+- ✅ Face Detection (HOG / CNN)
+- ✅ Facial Landmark Detection
+- ✅ Face Recognition (128D descriptors)
+- ✅ Deep Learning based face detection (CNN)
+- ✅ Chinese Whispers clustering (graph-based grouping)
 
 ## Requirements
 - Dlib 20+
@@ -44,7 +58,7 @@ sudo make install
 ### Configure PHP installation
 
 ```bash
-vim youpath/php.ini
+vim your-path/php.ini
 ```
 
 Append the content below into `php.ini`

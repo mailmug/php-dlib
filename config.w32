@@ -1,8 +1,12 @@
-// php_dlib config.w32
-
-ARG_WITH("php-dlib", "for php-dlib support", "no");
+ARG_WITH("php_dlib", "for php-dlib support", "no");
 
 if (PHP_PHP_DLIB != "no") {
+
+    var dlib_dir = PHP_PHP_DLIB;
+
+    if (dlib_dir == "no" || dlib_dir == "yes") {
+        ERROR("Usage: --with-php-dlib=PATH_TO_DLIB");
+    }
 
     EXTENSION("php_dlib",
         "php_dlib.cc " +
@@ -14,34 +18,16 @@ if (PHP_PHP_DLIB != "no") {
         "src/vector.cc"
     );
 
-    // Require C++ support
-    ADD_SOURCES("php_dlib", "", "CXX");
-
-    // Enable C++ standard
+    // C++14 support
     ADD_FLAG("CXXFLAGS_PHP_DLIB", "/std:c++14");
 
-    // Link C++ runtime
-    ADD_LIB("stdc++", "php_dlib");
+    // Include paths
+    ADD_INCLUDE(dlib_dir);
+    ADD_INCLUDE(dlib_dir + "\\dlib");
 
-    // ---- dlib include/lib paths (Windows users must set manually) ----
-    // Example:
-    // --with-php-dlib=C:\dlib
+    // Library path (IMPORTANT)
+    ADD_LIBPATH(dlib_dir + "\\lib");
 
-    if (PHP_PHP_DLIB != "no") {
-
-        var dlib_dir = PHP_PHP_DLIB;
-
-        if (dlib_dir == "yes") {
-            ERROR("Please specify dlib path: --with-php-dlib=DIR");
-        }
-
-        ADD_INCLUDE(dlib_dir);
-        ADD_INCLUDE(dlib_dir + "\\dlib");
-
-        ADD_LIBPATH(dlib_dir);
-
-        // If dlib is built as static/lib
-        ADD_FLAG("LIBS_PHP_DLIB", "dlib");
-
-    }
+    // Link dlib static or import lib
+    ADD_LIB("dlib");
 }

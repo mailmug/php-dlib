@@ -74,6 +74,7 @@ jobs:
           git clone https://github.com/microsoft/vcpkg
           cd vcpkg
           bootstrap-vcpkg.bat
+          set VCPKG_BUILD_TYPE=release
           vcpkg install dlib:x64-windows
 
       - name: Build PHP extension (Windows)
