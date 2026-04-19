@@ -1,11 +1,11 @@
-ARG_WITH("php_dlib", "for php-dlib support", "no");
+ARG_WITH("php_dlib", "for php_dlib support", "no");
 
 if (PHP_PHP_DLIB != "no") {
 
     var dlib_dir = PHP_PHP_DLIB;
 
-    if (dlib_dir == "no" || dlib_dir == "yes") {
-        ERROR("Usage: --with-php-dlib=PATH_TO_DLIB");
+    if (dlib_dir == "no") {
+        ERROR("Please pass dlib path: --with-php_dlib=PATH");
     }
 
     EXTENSION("php_dlib",
@@ -18,16 +18,10 @@ if (PHP_PHP_DLIB != "no") {
         "src/vector.cc"
     );
 
-    // C++14 support
     ADD_FLAG("CXXFLAGS_PHP_DLIB", "/std:c++14");
 
-    // Include paths
-    ADD_INCLUDE(dlib_dir);
-    ADD_INCLUDE(dlib_dir + "\\dlib");
-
-    // Library path (IMPORTANT)
+    ADD_INCLUDE(dlib_dir + "\\include");
     ADD_LIBPATH(dlib_dir + "\\lib");
 
-    // Link dlib static or import lib
     ADD_LIB("dlib");
 }
