@@ -32,14 +32,20 @@ jobs:
             libjpeg-dev \
             libpng-dev
 
-      - name: Build and install dlib from source
+      - name: Build and install dlib from source (PIC enabled)
         run: |
           git clone https://github.com/davisking/dlib.git
           cd dlib
           mkdir build
           cd build
-          cmake .. -DDLIB_USE_CUDA=OFF -DUSE_AVX_INSTRUCTIONS=ON
-          cmake --build . --config Release
+
+          cmake .. \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+            -DDLIB_USE_CUDA=OFF \
+            -DUSE_AVX_INSTRUCTIONS=ON \
+            -DCMAKE_BUILD_TYPE=Release
+
+          make -j2
           sudo make install
           sudo ldconfig
 
@@ -55,7 +61,7 @@ jobs:
         run: |
           phpize
           ./configure
-          make -j$(nproc)
+          make -j2
 
       - name: Run tests
         run: |
