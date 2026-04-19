@@ -58,56 +58,62 @@ jobs:
 
 
   windows:
-  runs-on: windows-2022
+    runs-on: windows-2022
 
-  strategy:
-    matrix:
-      php-version: ["8.3", "8.4", "8.5"]
-      arch: [x64]
-      ts: [nts, ts]
+    strategy:
+      matrix:
+        php-version: ["8.3", "8.4", "8.5"]
+        arch: [x64]
+        ts: [nts, ts]
 
-  steps:
-    - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-    - name: Cache vcpkg
-      uses: actions/cache@v4
-      with:
-        path: |
-          vcpkg/installed
-          vcpkg/buildtrees
-          vcpkg/packages
-        key: vcpkg-dlib-${{ runner.os }}
+      - name: Cache vcpkg
+        uses: actions/cache@v4
+        with:
+          path: |
+            vcpkg/installed
+            vcpkg/buildtrees
+            vcpkg/packages
+            vcpkg/downloads
+          key: vcpkg-dlib-${{ runner.os }}
 
-    - name: Clone vcpkg (only if needed)
-      run: |
-        git clone https://github.com/microsoft/vcpkg
-        cd vcpkg
-        bootstrap-vcpkg.bat
+      - name: Clone vcpkg (safe)
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "vcpkg")) {
+            git clone https://github.com/microsoft/vcpkg
+            cd vcpkg
+            .\bootstrap-vcpkg.bat
+          }
 
-    - name: Set VCPKG_ROOT
-      run: echo "VCPKG_ROOT=${{ github.workspace }}\\vcpkg" >> $env:GITHUB_ENV
+      - name: Set VCPKG_ROOT
+        shell: pwsh
+        run: echo "VCPKG_ROOT=${{ github.workspace }}\\vcpkg" >> $env:GITHUB_ENV
 
-    - name: Install dlib (fast mode)
-      run: |
-        set VCPKG_BUILD_TYPE=release
-        set VCPKG_MAX_CONCURRENCY=4
-        vcpkg install dlib:x64-windows
+      - name: Install dlib (fast mode)
+        shell: pwsh
+        run: |
+          $env:VCPKG_BUILD_TYPE="release"
+          $env:VCPKG_MAX_CONCURRENCY="4"
+          vcpkg install dlib:x64-windows --clean-after-build
 
-    - name: Build PHP extension (Windows)
-      uses: php/php-windows-builder/extension@v1
-      with:
-        php-version: ${{ matrix.php-version }}
-        arch: ${{ matrix.arch }}
-        ts: ${{ matrix.ts }}
-        args: --with-php_dlib=${{ env.VCPKG_ROOT }}\installed\x64-windows
-        run-tests: true
-        test-runner-args: "--show-diff tests"
+      - name: Build PHP extension (Windows)
+        uses: php/php-windows-builder/extension@v1
+        with:
+          php-version: ${{ matrix.php-version }}
+          arch: ${{ matrix.arch }}
+          ts: ${{ matrix.ts }}
+          args: --with-php_dlib=${{ env.VCPKG_ROOT }}\installed\x64-windows
+          run-tests: true
+          test-runner-args: "--show-diff tests"
 
-    - name: Upload Windows artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: php-dlib-windows-${{ matrix.php-version }}-${{ matrix.ts }}
-        path: "**/php_dlib.dll"
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: php-dlib-windows-${{ matrix.php-version }}-${{ matrix.ts }}
+          path: "**/php_dlib.dll"
 
 
   release:
