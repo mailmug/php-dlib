@@ -1,27 +1,39 @@
-ARG_WITH("php_dlib", "for php_dlib support", "no");
+// vim: ft=javascript
 
-if (PHP_PHP_DLIB != "no") {
+ARG_WITH("dlib", "dlib support", "no");
 
-    var dlib_dir = PHP_PHP_DLIB;
+if (PHP_DLIB != "no") {
 
-    if (dlib_dir == "no") {
-        ERROR("Please pass dlib path: --with-php_dlib=PATH");
+    var dlib_root = PHP_DLIB;
+    var dlib_inc  = dlib_root + "\\include";
+    var dlib_lib  = dlib_root + "\\lib";
+
+    if (!CHECK_HEADER_ADD_INCLUDE("dlib/dnn.h", "CFLAGS", dlib_inc)) {
+        ERROR("dlib/dnn.h not found in " + dlib_inc);
     }
 
-    EXTENSION("php_dlib",
-        "php_dlib.cc " +
-        "src/chinese_whispers.cc " +
-        "src/face_detection.cc " +
-        "src/face_landmark_detection.cc " +
-        "src/face_recognition.cc " +
-        "src/cnn_face_detection.cc " +
-        "src/vector.cc"
-    );
+    if (CHECK_LIB("dlib.lib", "dlib", dlib_lib)) {
 
-    ADD_FLAG("CXXFLAGS_PHP_DLIB", "/std:c++14");
+        EXTENSION("php_dlib",
+            "php_dlib.cc " +
+            "src/chinese_whispers.cc " +
+            "src/face_detection.cc " +
+            "src/face_landmark_detection.cc " +
+            "src/face_recognition.cc " +
+            "src/cnn_face_detection.cc " +
+            "src/vector.cc"
+        );
 
-    ADD_INCLUDE(dlib_dir + "\\include");
-    ADD_LIBPATH(dlib_dir + "\\lib");
+        AC_DEFINE("HAVE_DLIB", 1, "dlib enabled");
 
-    ADD_LIB("dlib");
+        ADD_FLAG("CFLAGS", "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1");
+        ADD_FLAG("CFLAGS", "/I" + dlib_inc);   
+
+        ADD_FLAG("LDFLAGS", "/libpath:\"" + dlib_lib + "\"");
+        ADD_FLAG("LIBS", "dlib.lib");
+
+    } else {
+        WARNING("dlib.lib not found");
+        PHP_DLIB = "no";
+    }
 }
