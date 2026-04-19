@@ -1,0 +1,13 @@
+// $Id$
+// vim:ft=javascript
+
+// If your extension references something external, use ARG_WITH
+// ARG_WITH("php_dlib", "for php_dlib support", "no");
+
+// Otherwise, use ARG_ENABLE
+// ARG_ENABLE("php_dlib", "enable php_dlib support", "no");
+
+if (PHP_DLIB != "no") {
+	EXTENSION("php_dlib", "php_dlib.c", PHP_EXTNAME_SHARED, "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1");
+}
+
