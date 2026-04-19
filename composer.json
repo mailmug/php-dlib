@@ -1,5 +1,5 @@
 {
-    "name": "mailmug/traitify",
+    "name": "mailmug/php_dlib",
     "type": "php-ext",
     "license": "MIT",
     "description": "PHP extension for the Dlib C++ library (face detection, landmarks, recognition, and clustering).",
@@ -7,6 +7,6 @@
         "php": ">=7.0"
     },
     "php-ext": {
-        "extension-name": "traitify"
+        "extension-name": "php_dlib"
     }
 }
