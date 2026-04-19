@@ -2,9 +2,9 @@ name: PHP Dlib CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
@@ -18,17 +18,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             build-essential \
             autoconf \
             pkg-config \
-            libdlib-dev \
+            cmake \
             libopenblas-dev \
             liblapack-dev \
-            cmake
+            libx11-dev \
+            libjpeg-dev \
+            libpng-dev
+
+      - name: Build and install dlib from source
+        run: |
+          git clone https://github.com/davisking/dlib.git
+          cd dlib
+          mkdir build
+          cd build
+          cmake .. -DDLIB_USE_CUDA=OFF -DUSE_AVX_INSTRUCTIONS=ON
+          cmake --build . --config Release
+          sudo make install
+          sudo ldconfig
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2

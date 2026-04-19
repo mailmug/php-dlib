@@ -1,8 +1,7 @@
 # PHP Dlib - PHP extension for Dlib
 
 ## Requirements
-- Dlib 19.13+
-- PHP 7.0+
+- Dlib 20+
 - C++14
 - libx11-dev (on Ubuntu: `sudo apt-get install libx11-dev`)
 
