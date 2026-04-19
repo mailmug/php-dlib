@@ -7,7 +7,7 @@ on:
     branches: ["main"]
 
 jobs:
-  build:
+  linux:
     runs-on: ubuntu-latest
 
     strategy:
@@ -18,33 +18,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install system dependencies
+      - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            build-essential \
-            autoconf \
-            pkg-config \
-            cmake \
-            libopenblas-dev \
-            liblapack-dev \
-            libx11-dev \
-            libjpeg-dev \
-            libpng-dev
+            build-essential autoconf pkg-config cmake \
+            libopenblas-dev liblapack-dev \
+            libx11-dev libjpeg-dev libpng-dev
 
-      - name: Build and install dlib from source (PIC enabled)
+      - name: Build dlib
         run: |
           git clone https://github.com/davisking/dlib.git
           cd dlib
-          mkdir build
-          cd build
-
-          cmake .. \
-            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-            -DDLIB_USE_CUDA=OFF \
-            -DUSE_AVX_INSTRUCTIONS=ON \
-            -DCMAKE_BUILD_TYPE=Release
-
+          mkdir build && cd build
+          cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release
           make -j2
           sudo make install
           sudo ldconfig
@@ -53,16 +40,53 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: none
-          ini-values: zend.assertions=1, display_errors=On
           tools: phpize, php-config
 
       - name: Build extension
         run: |
           phpize
-          ./configure
+          ./configure --with-php-dlib
           make -j2
 
       - name: Run tests
+        run: make test || true
+
+
+  windows:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        php: [8.2, 8.3, 8.5]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: none
+          tools: phpize, php-config
+
+      - name: Install CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Build dlib (Windows static)
         run: |
-          make test || true
+          git clone https://github.com/davisking/dlib.git
+          cd dlib
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DDLIB_USE_CUDA=OFF
+          cmake --build . --config Release
+
+      - name: Build PHP extension (Windows)
+        run: |
+          phpize
+          configure --with-php-dlib
+          nmake
+
+      - name: Run tests
+        run: php run-tests.php
