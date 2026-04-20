@@ -8,6 +8,8 @@ if (PHP_DLIB != "no") {
     var dlib_inc  = dlib_root + "\\include";
     var dlib_lib  = dlib_root + "\\lib";
 
+    MESSAGE("looking: " + dlib_root);
+
     if (!CHECK_HEADER_ADD_INCLUDE("dlib/dnn.h", "CFLAGS", dlib_inc)) {
         ERROR("dlib/dnn.h not found in " + dlib_inc);
     }
