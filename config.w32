@@ -14,33 +14,49 @@ if (PHP_DLIB != "no") {
         ERROR("dlib/dnn.h not found in " + dlib_inc);
     }
 
-    var files = glob(dlib_lib + "\\*.lib");
 
-    var found_lib = files.length > 0 ? files[0] : "";
+    CHECK_LIB("dlib.lib", "php_dlib", PHP_DLIB);
 
-    if (found_lib !== "") {
+    //ADD_FLAG("LIBS", found_lib);
+    
+    // Add LAPACK/BLAS libraries (required for matrix operations)
+    //ADD_FLAG("LIBS", "lapack.lib");
+    //ADD_FLAG("LIBS", "openblas.lib");
+    //ADD_FLAG("LIBS", "gfortran.lib"); // If using gfortran-compiled LAPACK
+    
+    // Add vcpkg library paths
+    //ADD_FLAG("LDFLAGS", '/libpath:"C:\\vcpkg\\installed\\x64-windows\\lib"');
 
-        CHECK_LIB("dlib.lib", "php_dlib", PHP_DLIB);
+    EXTENSION("php_dlib", "php_dlib.cpp", true,
+       '/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 /EHsc'
+    );
 
-        EXTENSION("php_dlib", "php_dlib.cpp", true,
-            "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 /EHsc"
-        );
+    ADD_SOURCES(configure_module_dirname + "/src", "\
+        chinese_whispers.cpp \
+        face_detection.cpp \
+        face_landmark_detection.cpp \
+        face_recognition.cpp \
+        cnn_face_detection.cpp \
+        vector.cpp",
+        "php_dlib"
+    );
 
-        ADD_SOURCES(configure_module_dirname + "/src", "\
-            chinese_whispers.cpp \
-            face_detection.cpp \
-            face_landmark_detection.cpp \
-            face_recognition.cpp \
-            cnn_face_detection.cpp \
-            vector.cpp",
-            "php_dlib"
-        );
- 
+    
+    ADD_FLAG("LDFLAGS_DLIB",
+    '/libpath:"' + dlib_lib + '" ' 
+    );
 
-        AC_DEFINE("HAVE_DLIB", 1, "dlib enabled");
+    ADD_FLAG("LIBS_DLIB",
+        "dlib.lib " +
+        "openblas.lib " +     // BLAS
+        "lapack.lib " +       // LAPACK
+        "libpng.lib " +       // PNG
+        "zlib.lib " +         // required by PNG
+        "jpeg.lib " +         // JPEG
+        "turbojpeg.lib "      // optional alt JPEG
+    );
 
-    } else {
-        WARNING("dlib.lib not found");
-        PHP_DLIB = "no";
-    }
+
+    AC_DEFINE("HAVE_DLIB", 1, "dlib enabled");
+
 }
