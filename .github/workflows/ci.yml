@@ -105,7 +105,7 @@ jobs:
           php-version: ${{ matrix.php-version }}
           arch: ${{ matrix.arch }}
           ts: ${{ matrix.ts }}
-          args: --with-dlib=${{ env.VCPKG_ROOT }}\installed\x64-windows
+          args: --with-dlib=${{ env.VCPKG_ROOT }}/installed/x64-windows
           run-tests: true
           test-runner-args: "--show-diff tests"
 
