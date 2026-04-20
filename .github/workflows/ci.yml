@@ -90,7 +90,7 @@ jobs:
 
       - name: Set VCPKG_ROOT
         shell: pwsh
-        run: echo "VCPKG_ROOT=${{ github.workspace }}\\vcpkg" >> $env:GITHUB_ENV
+        run: echo "VCPKG_ROOT=${{ github.workspace }}\vcpkg" >> $env:GITHUB_ENV
 
       - name: Install dlib (fast mode)
         shell: pwsh
@@ -105,7 +105,7 @@ jobs:
           php-version: ${{ matrix.php-version }}
           arch: ${{ matrix.arch }}
           ts: ${{ matrix.ts }}
-          args: --with-dlib=${{ env.VCPKG_ROOT }}/installed/x64-windows
+          args: --with-dlib=${{ env.VCPKG_ROOT }}\installed\x64-windows
           run-tests: true
           test-runner-args: "--show-diff tests"
 
