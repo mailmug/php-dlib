@@ -4,6 +4,7 @@ Frontal face detection.
 <?php
 if (!extension_loaded("php_dlib"))  die('skip php_dlib extension missing');
 if (getenv("SKIP_SLOW_TESTS")) die('skip slow test');
+if (PHP_OS_FAMILY === 'Windows') die('skip not supported on Windows');
 ?>
 --FILE--
 <?php
