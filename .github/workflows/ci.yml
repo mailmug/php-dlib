@@ -33,7 +33,7 @@ jobs:
 
       - name: Build dlib
         run: |
-          git clone https://github.com/davisking/dlib.git
+          git clone --branch v20.0.1 --depth 1 https://github.com/davisking/dlib.git
           cd dlib
           mkdir build && cd build
           cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release
@@ -122,6 +122,53 @@ jobs:
           name: php-dlib-windows-${{ matrix.php-version }}-${{ matrix.ts }}
           path: dist/*.dll
 
+  macos:
+    runs-on: macos-latest
+
+    strategy:
+      matrix:
+        php: [8.2, 8.3, 8.5]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install cmake openblas jpeg libpng
+
+      - name: Build dlib
+        run: |
+          git clone --branch v20.0.1 --depth 1 https://github.com/davisking/dlib.git
+          cd dlib
+          mkdir build && cd build
+          cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release
+          make -j2
+          sudo make install
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: phpize, php-config
+
+      - name: Build extension
+        run: |
+          phpize
+          ./configure --with-php-dlib
+          make -j2
+
+      - name: Prepare macOS artifact
+        run: |
+          FILE=$(find . -name "php_dlib.so" | head -n 1)
+          mkdir -p dist
+          mv "$FILE" dist/php-dlib-macos-${{ matrix.php }}.so
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: php-dlib-macos-${{ matrix.php }}
+          path: dist/*.so
 
   release:
     if: startsWith(github.ref, 'refs/tags/')
