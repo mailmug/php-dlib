@@ -94,7 +94,7 @@ jobs:
           php-version: ${{ matrix.php-version }}
           arch: ${{ matrix.arch }}
           ts: ${{ matrix.ts }}
-          args: --with-dlib=${{ github.workspace }}\dlib
+          args: --with-dlib=${{ github.workspace }}\dlib\dlib
           run-tests: true
           test-runner-args: "--show-diff tests"
 
