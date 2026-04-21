@@ -17,16 +17,6 @@ if (PHP_DLIB != "no") {
 
     CHECK_LIB("dlib.lib", "php_dlib", PHP_DLIB);
 
-    //ADD_FLAG("LIBS", found_lib);
-    
-    // Add LAPACK/BLAS libraries (required for matrix operations)
-    //ADD_FLAG("LIBS", "lapack.lib");
-    //ADD_FLAG("LIBS", "openblas.lib");
-    //ADD_FLAG("LIBS", "gfortran.lib"); // If using gfortran-compiled LAPACK
-    
-    // Add vcpkg library paths
-    //ADD_FLAG("LDFLAGS", '/libpath:"C:\\vcpkg\\installed\\x64-windows\\lib"');
-
     EXTENSION("php_dlib", "php_dlib.cpp", true,
        '/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 /EHsc'
     );
@@ -43,19 +33,10 @@ if (PHP_DLIB != "no") {
 
     
     ADD_FLAG("LDFLAGS_DLIB",
-    '/libpath:"' + dlib_lib + '" ' 
+    	'/libpath:"' + dlib_lib + '" ' 
     );
 
-    ADD_FLAG("LIBS_DLIB",
-        "dlib.lib " +
-        "openblas.lib " +     // BLAS
-        "lapack.lib " +       // LAPACK
-        "libpng.lib " +       // PNG
-        "zlib.lib " +         // required by PNG
-        "jpeg.lib " +         // JPEG
-        "turbojpeg.lib "      // optional alt JPEG
-    );
-
+    ADD_FLAG("LIBS_DLIB",  "dlib.lib "  );
 
     AC_DEFINE("HAVE_DLIB", 1, "dlib enabled");
 

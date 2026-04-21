@@ -7,13 +7,13 @@ if test "$PHP_PHP_DLIB" != "no"; then
   PHP_ADD_LIBRARY(stdc++, 1, PHP_DLIB_SHARED_LIBADD)
   PHP_SUBST(PHP_DLIB_SHARED_LIBADD)
 
-  php_dlib_src_files="php_dlib.cc \
-  src/chinese_whispers.cc \
-  src/face_detection.cc \
-  src/face_landmark_detection.cc \
-  src/face_recognition.cc \
-  src/cnn_face_detection.cc \
-  src/vector.cc"
+  php_dlib_src_files="php_dlib.cpp \
+  src/chinese_whispers.cpp \
+  src/face_detection.cpp \
+  src/face_landmark_detection.cpp \
+  src/face_recognition.cpp \
+  src/cnn_face_detection.cpp \
+  src/vector.cpp"
 
   AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
   if test -x "$PKG_CONFIG"; then
