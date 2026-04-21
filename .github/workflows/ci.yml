@@ -52,12 +52,17 @@ jobs:
           ./configure --with-php-dlib
           make -j2
 
+      - name: Rename extension
+        run: |
+          FILE=$(find . -name "php_dlib.so" | head -n 1)
+          mv "$FILE" php-dlib-linux-${{ matrix.php }}.so
+
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
           name: php-dlib-linux-${{ matrix.php }}
           path: |
-            **/php_dlib.so
+            php-dlib-linux-${{ matrix.php }}.so
 
 
   windows:
@@ -100,7 +105,7 @@ jobs:
           $dll = Get-ChildItem -Recurse -Filter "*dlib*.dll" | Select-Object -First 1
           if ($dll) {
             Write-Host "Found DLL: $($dll.FullName)"
-            Copy-Item $dll.FullName "php_dlib.dll"
+            Copy-Item $dll.FullName "php-dlib-${{ matrix.php-version }}-${{ matrix.ts }}.dll"
           } else {
             Write-Error "DLL not found!"
             exit 1
@@ -110,7 +115,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: php-dlib-windows-${{ matrix.php-version }}-${{ matrix.ts }}
-          path: php_dlib.dll
+          path: php-dlib-${{ matrix.php-version }}-${{ matrix.ts }}.dll
 
 
   release:
@@ -128,11 +133,24 @@ jobs:
       - name: List artifacts
         run: ls -R artifacts
 
+      - name: Remove php_php_dlib artifacts
+        run: |
+          echo "Cleaning unwanted Windows builder ZIPs..."
+
+          find artifacts -type f -name "php_php_dlib*" -delete
+
+          echo "Remaining artifacts:"
+          ls -R artifacts
+
       - name: Create GitHub Release + Upload Assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          files: artifacts/**/*
+          files: |
+            artifacts/*.so
+            artifacts/*.dll
+      
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
