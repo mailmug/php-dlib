@@ -95,8 +95,9 @@ jobs:
       - name: Find and prepare DLL
         shell: pwsh
         run: |
-          $dll = Get-ChildItem -Recurse -Filter "php_dlib.dll" | Select-Object -First 1
+          $dll = Get-ChildItem -Recurse -Filter "*dlib*.dll" | Select-Object -First 1
           if ($dll) {
+            Write-Host "Found DLL: $($dll.FullName)"
             Copy-Item $dll.FullName "php_dlib.dll"
           } else {
             Write-Error "DLL not found!"
