@@ -1,4 +1,4 @@
-name: PHP Dlib CI 
+name: PHP Dlib CI
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
       - "v*"
   pull_request:
     branches: ["main"]
+
 permissions:
   contents: write
 
@@ -52,17 +53,17 @@ jobs:
           ./configure --with-php-dlib
           make -j2
 
-      - name: Rename extension
+      - name: Prepare Linux artifact
         run: |
           FILE=$(find . -name "php_dlib.so" | head -n 1)
-          mv "$FILE" php-dlib-linux-${{ matrix.php }}.so
+          mkdir -p dist
+          mv "$FILE" dist/php-dlib-linux-${{ matrix.php }}.so
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
           name: php-dlib-linux-${{ matrix.php }}
-          path: |
-            php-dlib-linux-${{ matrix.php }}.so
+          path: dist/*.so
 
 
   windows:
@@ -99,13 +100,17 @@ jobs:
           run-tests: true
           test-runner-args: "--show-diff tests"
 
-      - name: Find and prepare DLL
+      - name: Prepare Windows artifact
         shell: pwsh
         run: |
           $dll = Get-ChildItem -Recurse -Filter "*dlib*.dll" | Select-Object -First 1
+
           if ($dll) {
             Write-Host "Found DLL: $($dll.FullName)"
-            Copy-Item $dll.FullName "php-dlib-${{ matrix.php-version }}-${{ matrix.ts }}.dll"
+
+            New-Item -ItemType Directory -Force -Path "dist" | Out-Null
+
+            Copy-Item $dll.FullName "dist/php-dlib-windows-${{ matrix.php-version }}-${{ matrix.ts }}.dll"
           } else {
             Write-Error "DLL not found!"
             exit 1
@@ -115,7 +120,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: php-dlib-windows-${{ matrix.php-version }}-${{ matrix.ts }}
-          path: php-dlib-${{ matrix.php-version }}-${{ matrix.ts }}.dll
+          path: dist/*.dll
 
 
   release:
@@ -133,13 +138,15 @@ jobs:
       - name: List artifacts
         run: ls -R artifacts
 
-      - name: Remove php_php_dlib artifacts
+      - name: Clean unwanted files
         run: |
-          echo "Cleaning unwanted Windows builder ZIPs..."
+          find artifacts -type f \( \
+            -name "php_php_dlib*" -o \
+            -name "*.log" -o \
+            -name "*.zip" \
+          \) -delete
 
-          find artifacts -type f -name "php_php_dlib*" -delete
-
-          echo "Remaining artifacts:"
+          echo "Cleaned artifacts:"
           ls -R artifacts
 
       - name: Create GitHub Release + Upload Assets
