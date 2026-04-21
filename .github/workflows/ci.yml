@@ -1,4 +1,4 @@
-name: PHP Dlib CI
+name: PHP Dlib
 
 on:
   push:
