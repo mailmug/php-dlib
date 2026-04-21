@@ -69,52 +69,47 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cache vcpkg
-        uses: actions/cache@v4
-        with:
-          path: |
-            vcpkg/installed
-            vcpkg/buildtrees
-            vcpkg/packages
-            vcpkg/downloads
-          key: vcpkg-dlib-${{ runner.os }}
-
-      - name: Clone vcpkg (safe)
+      - name: Download dlib
         shell: pwsh
         run: |
-          if (-not (Test-Path "vcpkg")) {
-            git clone https://github.com/microsoft/vcpkg
-            cd vcpkg
-            .\bootstrap-vcpkg.bat
-          }
+          Invoke-WebRequest `
+            -Uri "https://wpdebuglog.com/wp-content/uploads/2021/10/dlib.zip" `
+            -OutFile "dlib.zip"
 
-      - name: Set VCPKG_ROOT
-        shell: pwsh
-        run: echo "VCPKG_ROOT=${{ github.workspace }}\vcpkg" >> $env:GITHUB_ENV
 
-      - name: Install dlib (fast mode)
+      - name: Extract dlib
         shell: pwsh
         run: |
-          $env:VCPKG_BUILD_TYPE="release"
-          $env:VCPKG_MAX_CONCURRENCY="4"
-          vcpkg install dlib:x64-windows --clean-after-build
+          Expand-Archive -Path dlib.zip -DestinationPath dlib -Force
 
-      - name: Build PHP extension (Windows)
+
+      - name: List dlib files
+        shell: pwsh
+        run: |
+          Get-ChildItem dlib -Recurse
+
+      - name: Build PHP Extension
         uses: php/php-windows-builder/extension@v1
         with:
           php-version: ${{ matrix.php-version }}
           arch: ${{ matrix.arch }}
           ts: ${{ matrix.ts }}
-          args: --with-dlib=${{ env.VCPKG_ROOT }}\\installed\\x64-windows
+          args: --with-dlib=${{ github.workspace }}\dlib
           run-tests: true
           test-runner-args: "--show-diff tests"
+
+      - name: Rename DLL
+        shell: pwsh
+        run: |
+          if (Test-Path "php_php_dlib.dll") {
+            Rename-Item "php_php_dlib.dll" "php_dlib.dll"
+          }
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: php-dlib-windows-${{ matrix.php-version }}-${{ matrix.ts }}
-          path: "**/php_dlib.dll"
-
+          path: php_dlib.dll
 
   release:
     if: startsWith(github.ref, 'refs/tags/')
