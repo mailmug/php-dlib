@@ -82,7 +82,7 @@ jobs:
         shell: pwsh
         run: |
           Invoke-WebRequest `
-            -Uri "https://wpdebuglog.com/wp-content/uploads/2021/10/dlib.zip" `
+            -Uri "https://wpdebuglog.com/wp-content/uploads/2021/10/dlib-1.zip" `
             -OutFile "dlib.zip"
 
       - name: Extract dlib
