@@ -1,4 +1,4 @@
-name: PHP Dlib
+name: PHP Dlib CI
 
 on:
   push:
@@ -54,7 +54,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: php-dlib-linux-${{ matrix.php }}
-          path: "**/php_dlib.so"
+          path: |
+            **/php_dlib.so
 
 
   windows:
@@ -76,17 +77,10 @@ jobs:
             -Uri "https://wpdebuglog.com/wp-content/uploads/2021/10/dlib.zip" `
             -OutFile "dlib.zip"
 
-
       - name: Extract dlib
         shell: pwsh
         run: |
           Expand-Archive -Path dlib.zip -DestinationPath dlib -Force
-
-
-      - name: List dlib files
-        shell: pwsh
-        run: |
-          Get-ChildItem dlib -Recurse
 
       - name: Build PHP Extension
         uses: php/php-windows-builder/extension@v1
@@ -94,15 +88,19 @@ jobs:
           php-version: ${{ matrix.php-version }}
           arch: ${{ matrix.arch }}
           ts: ${{ matrix.ts }}
-          args: --with-dlib=${{ github.workspace }}\dlib\dlib
+          args: --with-php-dlib=${{ github.workspace }}\dlib\dlib
           run-tests: true
           test-runner-args: "--show-diff tests"
 
-      - name: Rename DLL
+      - name: Find and prepare DLL
         shell: pwsh
         run: |
-          if (Test-Path "php_php_dlib.dll") {
-            Rename-Item "php_php_dlib.dll" "php_dlib.dll"
+          $dll = Get-ChildItem -Recurse -Filter "php_dlib.dll" | Select-Object -First 1
+          if ($dll) {
+            Copy-Item $dll.FullName "php_dlib.dll"
+          } else {
+            Write-Error "DLL not found!"
+            exit 1
           }
 
       - name: Upload Windows artifact
@@ -110,6 +108,7 @@ jobs:
         with:
           name: php-dlib-windows-${{ matrix.php-version }}-${{ matrix.ts }}
           path: php_dlib.dll
+
 
   release:
     if: startsWith(github.ref, 'refs/tags/')
@@ -123,7 +122,7 @@ jobs:
           path: artifacts
           merge-multiple: true
 
-      - name: List files
+      - name: List artifacts
         run: ls -R artifacts
 
       - name: Create GitHub Release + Upload Assets
