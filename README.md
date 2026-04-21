@@ -11,8 +11,44 @@ This project is a fork of the original **pdlib** and extends it with improved bu
 - ✅ Face Detection (HOG / CNN)
 - ✅ Facial Landmark Detection
 - ✅ Face Recognition (128D descriptors)
-- ✅ Deep Learning based face detection (CNN)
+- ✅ Deep Learning-based face detection (CNN)
 - ✅ Chinese Whispers clustering (graph-based grouping)
+
+
+
+## PHP Dlib Extension Quick Installation Guide
+
+### 1. Download the Extension
+Download the correct file from:
+https://github.com/mailmug/php-dlib/releases
+
+Choose:
+- Windows → `.dll`
+- Linux → `.so`
+- Mac → `.so`
+
+⚠️ Make sure it matches:
+- PHP version (8.2 / 8.3 / 8.5)
+- Thread Safe (TS) or Non-Thread Safe (NTS)
+- Architecture (x64 / x86)
+
+
+#### 2. Windows Installation (.dll)
+
+##### Find php.ini
+
+Create file:
+```php
+<?php phpinfo();
+```
+
+Open: `http://localhost/info.php` Then check: `Loaded Configuration File (php.ini)`. 
+
+Finally, add the following code to the `php.ini` file
+```bash
+extension="/path/to/dlib.dll"
+```
+Then restart the server. Finished :) 
 
 ## Requirements
 - Dlib 20+
@@ -21,16 +57,16 @@ This project is a fork of the original **pdlib** and extends it with improved bu
 
 ## Recommended
 - BLAS library  
-If no BLAS library found - dlib's built in BLAS will be used.
+If no BLAS library found - dlib's built-in BLAS will be used.
 However, if you install an optimized BLAS such as OpenBLAS or the Intel MKL your code
-will run faster.  On Ubuntu you can install OpenBLAS by executing:
+will run faster.  On Ubuntu, you can install OpenBLAS by executing:
 `sudo apt-get install libopenblas-dev liblapack-dev`
 
 ## Dependencies
 
 ### Dlib
 
-Install Dlib as shared library
+Install Dlib as a shared library
 
 ```bash
 git clone https://github.com/davisking/dlib.git
@@ -49,7 +85,7 @@ git clone https://github.com/mailmug/php-dlib.git
 cd php_dlib
 phpize
 ./configure --enable-debug
-# you may need to indicate the dlib install location
+# You may need to indicate the dlib install location
 # PKG_CONFIG_PATH=/usr/local/lib/pkgconfig ./configure --enable-debug
 make
 sudo make install
@@ -61,7 +97,7 @@ sudo make install
 vim your-path/php.ini
 ```
 
-Append the content below into `php.ini`
+Append the content below to `php.ini`
 
 ```
 [php_dlib]
@@ -75,7 +111,7 @@ For tests, you will need to have bz2 extension installed. On Ubuntu, it boils to
 sudo apt-get install php-bz2
 ```
 
-After you successfully compiled everything, just run:
+After you have successfully compiled everything, just run:
 ```bash
 make test
 ```
@@ -84,10 +120,10 @@ make test
 
 ### General Usage
 
-Good starting point can be `tests/integration_face_recognition.phpt`. Check that first.
+A good starting point can be `tests/integration_face_recognition.phpt`. Check that first.
 
-Basically, if you just quickly want to get from your image to 128D descriptor of faces in image,
-here is really minimal example how:
+Basically, if you just want to quickly get from your image to a 128D descriptor of faces in the image,
+here is a really minimal example of how:
 
 ```php
 <?php
@@ -103,32 +139,31 @@ foreach($detected_faces as $detected_face) {
 }
 ```
 
-Location from where to get these models can be found on DLib website, as well as in `tests/integration_face_recognition.phpt` test.
+Location from where to get these models can be found on the DLib website, as well as in `tests/integration_face_recognition.phpt` test.
 
 ### Specific use cases
 
 #### face detection
 
-If you want to use HOG based approach:
+If you want to use the HOG-based approach:
 
 ```php
 <?php
 
 // face detection
 detected_faces = dlib_face_detection("image.jpg");
-// $detected_faces is indexed array, where values are assoc arrays with "top", "bottom", "left" and "right" values
+// $detected_faces is an indexed array, where values are assoc arrays with "top", "bottom", "left" and "right" values
 ```
 
-If you want to use CNN approach (and CNN model):
+If you want to use the CNN approach (and CNN model):
 
 ```php
 <?php
 $fd = new CnnFaceDetection("detection_cnn_model.dat");
 $detected_faces = $fd->detect("image.jpg");
-// $detected_face is indexed array, where values are assoc arrays with "top", "bottom", "left" and "right" values
+// $detected_face is an indexed array, where values are assoc arrays with "top", "bottom", "left", and "right" values
 ```
-
-CNN model can get you slightly better results, but is much, much more demanding (CPU and memory, GPU is also preferred).
+The CNN model can get you slightly better results, but is much, much more demanding (CPU and memory, GPU is also preferred).
 
 #### face landmark detection
 
@@ -140,7 +175,7 @@ $landmarks = dlib_face_landmark_detection("~/a.jpg");
 var_dump($landmarks);
 ```
 
-Additionally, you can also use class-based approach:
+Additionally, you can also use a class-based approach:
 ```php
 $rect = array("left"=>value, "top"=>value, "right"=>value, "bottom"=>value);
 // You can download a trained facial shape predictor from:
@@ -150,7 +185,7 @@ $parts = $fld->detect("path/to/image.jpg", $rect);
 // $parts is integer array where keys are associative values with "x" and "y" for keys
 ```
 
-Note that, if you use class-based approach, you need to feed bounding box rectangle with values obtained from `dlib_face_detection`. If you use `dlib_face_landmark_detection`, everything is already done for you (and you are using HOG face detection model).
+Note that, if you use a class-based approach, you need to feed the bounding box rectangle with values obtained from `dlib_face_detection`. If you use `dlib_face_landmark_detection`, everything is already done for you (and you are using the HOG face detection model).
 
 #### face recognition (aka getting face descriptor)
 
@@ -165,14 +200,13 @@ $descriptor = $fr->computeDescriptor($img_path, $landmarks);
 // $descriptor is 128D array
 ```
 
-#### chinese whispers
+#### Chinese whispers
 
 Provides raw access to dlib's `chinese_whispers` function.
-Client need to build and provide edges. Edges are provided
-as numeric array. Each element of this array should also be
-numeric array with 2 elements of long type.
+The client needs to build and provide edges. Edges are provided
+as a numeric array. Each element of this array should also be a numeric array with 2 elements of long type.
 
-Returned value is also numeric array, containing obtained labels.
+Returned value is also a numeric array, containing obtained labels.
 
 ```php
 <?php
@@ -183,9 +217,9 @@ $labels = dlib_chinese_whispers($edges);
 ```
 
 ## Features
-- [x] 1.Face Detection
-- [x] 2.Face Landmark Detection
-- [x] 3.Deep Face Recognition
-- [x] 4.Deep Learning Face Detection
+- [x] 1. Face Detection
+- [x] 2. Face Landmark Detection
+- [x] 3. Deep Face Recognition
+- [x] 4. Deep Learning Face Detection
 - [x] 5. Raw chinese_whispers
 
