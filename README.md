@@ -27,7 +27,7 @@ Choose:
 - Linux → `.so`
 - Mac → `.so`
 
-⚠️ Make sure it matches:
+Make sure it matches:
 - PHP version (8.2 / 8.3 / 8.5)
 - Thread Safe (TS) or Non-Thread Safe (NTS)
 - Architecture (x64 / x86)
@@ -69,7 +69,7 @@ will run faster.  On Ubuntu, you can install OpenBLAS by executing:
 Install Dlib as a shared library
 
 ```bash
-git clone https://github.com/davisking/dlib.git
+clone --branch v20.0.1 --depth 1 https://github.com/davisking/dlib.git
 cd dlib/dlib
 mkdir build
 cd build
@@ -106,7 +106,7 @@ extension="php_dlib.so"
 
 ## Tests
 
-For tests, you will need to have bz2 extension installed. On Ubuntu, it boils to:
+For tests, you will need to have the bz2 extension installed. On Ubuntu, it boils down to:
 ```bash
 sudo apt-get install php-bz2
 ```
