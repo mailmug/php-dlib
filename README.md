@@ -17,10 +17,11 @@ This project is a fork of the original **pdlib** and extends it with improved bu
 
 
 ## PHP Dlib Extension Quick Installation Guide
+[Tutorial](https://dev.to/arshidkv12/develop-a-pure-php-face-recognition-application-313n)
 
 ### 1. Download the Extension
-Download the correct file from:
-https://github.com/mailmug/php-dlib/releases
+Download the correct file from: [Releases](https://github.com/mailmug/php-dlib/releases)
+
 
 Choose:
 - Windows → `.dll`
