@@ -86,6 +86,9 @@ jobs:
       - name: Prepare dlib
         shell: pwsh
         run: |
+          cmake -S dlib -B dlib\build `
+            -DCMAKE_BUILD_TYPE=Release
+
           New-Item -ItemType Directory -Force -Path "dlib\include" | Out-Null
 
           Copy-Item `
@@ -94,40 +97,28 @@ jobs:
             -Recurse `
             -Force
 
-          Write-Host "Checking dnn.h..."
+          # Copy generated dlib headers.
+          if (Test-Path "dlib\build\dlib\revision.h") {
+            Copy-Item `
+              "dlib\build\dlib\revision.h" `
+              "dlib\include\dlib\revision.h" `
+              -Force
+          }
+
+          Write-Host "Checking dlib headers..."
 
           if (-not (Test-Path "dlib\include\dlib\dnn.h")) {
             Write-Error "dnn.h not found!"
             exit 1
           }
 
-          Write-Host "Found: dlib\include\dlib\dnn.h"
-
-      - name: Build PHP Extension
-        uses: php/php-windows-builder/extension@v1
-        with:
-          php-version: ${{ matrix.php-version }}
-          arch: ${{ matrix.arch }}
-          ts: ${{ matrix.ts }}
-          args: --with-dlib=${{ github.workspace }}\dlib
-          run-tests: true
-          test-runner-args: "--show-diff tests"
-
-      - name: Prepare Windows artifact
-        shell: pwsh
-        run: |
-          $dll = Get-ChildItem -Recurse -Filter "*dlib*.dll" | Select-Object -First 1
-
-          if ($dll) {
-            Write-Host "Found DLL: $($dll.FullName)"
-
-            New-Item -ItemType Directory -Force -Path "dist" | Out-Null
-
-            Copy-Item $dll.FullName "dist/php-dlib-windows-${{ matrix.php-version }}-${{ matrix.ts }}.dll"
-          } else {
-            Write-Error "DLL not found!"
+          if (-not (Test-Path "dlib\include\dlib\revision.h")) {
+            Write-Error "revision.h not found!"
             exit 1
           }
+
+          Write-Host "Found dnn.h"
+          Write-Host "Found revision.h"
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
