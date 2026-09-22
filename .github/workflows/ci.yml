@@ -81,14 +81,18 @@ jobs:
       - name: Download dlib
         shell: pwsh
         run: |
-          Invoke-WebRequest `
-            -Uri "https://wpdebuglog.com/wp-content/uploads/2021/10/dlib-1.zip" `
-            -OutFile "dlib.zip"
+          git clone --branch v20.0.1 --depth 1 https://github.com/davisking/dlib.git dlib
 
-      - name: Extract dlib
+      - name: Verify dlib
         shell: pwsh
         run: |
-          Expand-Archive -Path dlib.zip -DestinationPath dlib -Force
+          if (-not (Test-Path "dlib\dlib")) {
+            Write-Error "dlib source directory not found!"
+            exit 1
+          }
+
+          Write-Host "dlib source:"
+          Get-ChildItem "dlib\dlib" | Select-Object -First 10
 
       - name: Build PHP Extension
         uses: php/php-windows-builder/extension@v1
