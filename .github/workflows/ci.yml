@@ -81,9 +81,21 @@ jobs:
       - name: Download dlib
         shell: pwsh
         run: |
+          $url = "https://wpdebuglog.com/wp-content/uploads/2026/09/dlib-2.zip"
+          $file = "dlib.zip"
+      
           Invoke-WebRequest `
-            -Uri "https://wpdebuglog.com/wp-content/uploads/2026/09/dlib-2.zip" `
-            -OutFile "dlib.zip"
+            -Uri $url `
+            -OutFile $file
+      
+          if (Test-Path $file) {
+            $size = (Get-Item $file).Length
+            Write-Host "Downloaded successfully: $file"
+            Write-Host "File size: $size bytes"
+          } else {
+            Write-Error "Download failed: $file was not created"
+            exit 1
+          }
 
       - name: Extract dlib
         shell: pwsh
