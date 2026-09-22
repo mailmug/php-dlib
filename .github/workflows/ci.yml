@@ -129,7 +129,7 @@ jobs:
           Write-Host ""
           Write-Host "=== dlib root contents ==="
 
-          Get-ChildItem "${{ github.workspace }}\dlib\dlib" -Force |
+          Get-ChildItem "${{ github.workspace }}\dlib\dlib\dlib" -Force |
             Select-Object Name, FullName
 
       - name: Build PHP Extension
