@@ -101,19 +101,32 @@ jobs:
         shell: pwsh
         run: |
           Expand-Archive -Path dlib.zip -DestinationPath dlib -Force
-      
-          Write-Host "=== dlib directory ==="
-          Get-ChildItem dlib -Recurse -Directory | Select-Object FullName
-      
-          Write-Host "=== dnn.h ==="
-          $header = Get-ChildItem dlib -Recurse -Filter dnn.h
-      
-          if (-not $header) {
-            Write-Error "dnn.h NOT FOUND"
+
+          $dlibRoot = "${{ github.workspace }}\dlib\dlib"
+          $header = "$dlibRoot\include\dlib\dnn.h"
+
+          Write-Host "dlib root: $dlibRoot"
+          Write-Host "Expected header: $header"
+
+          if (-not (Test-Path $header)) {
+            Write-Error "Expected dlib/dnn.h not found: $header"
+
+            Write-Host "`nActual dnn.h files:"
+            Get-ChildItem "${{ github.workspace }}\dlib" `
+              -Recurse `
+              -Filter dnn.h |
+              Select-Object -ExpandProperty FullName
+
+            Write-Host "`nExtracted directory tree:"
+            Get-ChildItem "${{ github.workspace }}\dlib" `
+              -Recurse `
+              -Directory |
+              Select-Object -ExpandProperty FullName
+
             exit 1
           }
-      
-          $header | Select-Object FullName
+
+          Write-Host "Found: $header"
 
       - name: Build PHP Extension
         uses: php/php-windows-builder/extension@v1
