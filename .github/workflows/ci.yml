@@ -18,7 +18,7 @@ jobs:
 
     strategy:
       matrix:
-        php: [8.2, 8.3, 8.5]
+        php: [8.2, 8.3, 8.4, 8.5, 8.6]
 
     steps:
       - uses: actions/checkout@v4
@@ -71,7 +71,7 @@ jobs:
 
     strategy:
       matrix:
-        php-version: ["8.3", "8.4", "8.5"]
+        php-version: ["8.2", "8.3", "8.4", "8.5", "8.6"]
         arch: [x64]
         ts: [nts, ts]
 
@@ -127,7 +127,7 @@ jobs:
 
     strategy:
       matrix:
-        php: [8.2, 8.3, 8.5]
+        php: [8.2, 8.3, 8.4, 8.5]
 
     steps:
       - uses: actions/checkout@v4
