@@ -120,6 +120,16 @@ jobs:
           Write-Host "Found dnn.h"
           Write-Host "Found revision.h"
 
+      - name: Build PHP Extension
+        uses: php/php-windows-builder/extension@v1
+        with:
+          php-version: ${{ matrix.php-version }}
+          arch: ${{ matrix.arch }}
+          ts: ${{ matrix.ts }}
+          args: --with-dlib=${{ github.workspace }}\dlib
+          run-tests: true
+          test-runner-args: "--show-diff tests"
+
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
