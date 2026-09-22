@@ -100,33 +100,37 @@ jobs:
       - name: Extract dlib
         shell: pwsh
         run: |
+          Remove-Item -Recurse -Force dlib -ErrorAction SilentlyContinue
+
           Expand-Archive -Path dlib.zip -DestinationPath dlib -Force
 
-          $dlibRoot = "${{ github.workspace }}\dlib\dlib"
-          $header = "$dlibRoot\include\dlib\dnn.h"
+          Write-Host "=== dnn.h locations ==="
 
-          Write-Host "dlib root: $dlibRoot"
-          Write-Host "Expected header: $header"
+          $headers = Get-ChildItem `
+            -Path "${{ github.workspace }}\dlib" `
+            -Recurse `
+            -Filter "dnn.h"
 
-          if (-not (Test-Path $header)) {
-            Write-Error "Expected dlib/dnn.h not found: $header"
-
-            Write-Host "`nActual dnn.h files:"
-            Get-ChildItem "${{ github.workspace }}\dlib" `
-              -Recurse `
-              -Filter dnn.h |
-              Select-Object -ExpandProperty FullName
-
-            Write-Host "`nExtracted directory tree:"
-            Get-ChildItem "${{ github.workspace }}\dlib" `
-              -Recurse `
-              -Directory |
-              Select-Object -ExpandProperty FullName
-
+          if ($headers.Count -eq 0) {
+            Write-Error "dnn.h was not found in the extracted archive"
             exit 1
           }
 
-          Write-Host "Found: $header"
+          foreach ($header in $headers) {
+            Write-Host "FOUND: $($header.FullName)"
+          }
+
+          Write-Host ""
+          Write-Host "=== Directory containing dnn.h ==="
+
+          $header = $headers | Select-Object -First 1
+          Write-Host $header.Directory.FullName
+
+          Write-Host ""
+          Write-Host "=== dlib root contents ==="
+
+          Get-ChildItem "${{ github.workspace }}\dlib\dlib" -Force |
+            Select-Object Name, FullName
 
       - name: Build PHP Extension
         uses: php/php-windows-builder/extension@v1
