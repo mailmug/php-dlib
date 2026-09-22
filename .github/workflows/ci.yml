@@ -83,16 +83,25 @@ jobs:
         run: |
           git clone --branch v20.0.1 --depth 1 https://github.com/davisking/dlib.git dlib
 
-      - name: Verify dlib
+      - name: Prepare dlib
         shell: pwsh
         run: |
-          if (-not (Test-Path "dlib\dlib")) {
-            Write-Error "dlib source directory not found!"
+          New-Item -ItemType Directory -Force -Path "dlib\include" | Out-Null
+
+          Copy-Item `
+            "dlib\dlib" `
+            "dlib\include\dlib" `
+            -Recurse `
+            -Force
+
+          Write-Host "Checking dnn.h..."
+
+          if (-not (Test-Path "dlib\include\dlib\dnn.h")) {
+            Write-Error "dnn.h not found!"
             exit 1
           }
 
-          Write-Host "dlib source:"
-          Get-ChildItem "dlib\dlib" | Select-Object -First 10
+          Write-Host "Found: dlib\include\dlib\dnn.h"
 
       - name: Build PHP Extension
         uses: php/php-windows-builder/extension@v1
@@ -100,7 +109,7 @@ jobs:
           php-version: ${{ matrix.php-version }}
           arch: ${{ matrix.arch }}
           ts: ${{ matrix.ts }}
-          args: --with-dlib=${{ github.workspace }}\dlib\dlib
+          args: --with-dlib=${{ github.workspace }}\dlib
           run-tests: true
           test-runner-args: "--show-diff tests"
 
