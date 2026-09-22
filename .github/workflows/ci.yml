@@ -81,31 +81,87 @@ jobs:
       - name: Download dlib
         shell: pwsh
         run: |
-          git clone --branch v20.0.1 --depth 1 https://github.com/davisking/dlib.git dlib
+          git clone --branch v20.0.1 --depth 1 `
+            https://github.com/davisking/dlib.git dlib
+
+      - name: Build dlib
+        shell: pwsh
+        run: |
+          cmake -S dlib -B dlib\build `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL
+
+          cmake --build dlib\build `
+            --config Release `
+            --parallel 2
 
       - name: Prepare dlib
         shell: pwsh
         run: |
-          cmake -S dlib -B dlib\build `
-            -DCMAKE_BUILD_TYPE=Release
+          New-Item -ItemType Directory -Force `
+            -Path "dlib\include\dlib" | Out-Null
 
-          New-Item -ItemType Directory -Force -Path "dlib\include" | Out-Null
+          New-Item -ItemType Directory -Force `
+            -Path "dlib\lib" | Out-Null
 
+          # Copy dlib headers.
           Copy-Item `
-            "dlib\dlib" `
+            "dlib\dlib\*" `
             "dlib\include\dlib" `
             -Recurse `
             -Force
 
-          # Copy generated dlib headers.
-          if (Test-Path "dlib\build\dlib\revision.h") {
-            Copy-Item `
-              "dlib\build\dlib\revision.h" `
-              "dlib\include\dlib\revision.h" `
-              -Force
+          # Find generated revision.h.
+          $revision = Get-ChildItem `
+            -Path "dlib\build" `
+            -Recurse `
+            -Filter "revision.h" `
+            -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+
+          if (-not $revision) {
+            Write-Error "revision.h not found!"
+            exit 1
           }
 
-          Write-Host "Checking dlib headers..."
+          Write-Host "Found revision.h: $($revision.FullName)"
+
+          Copy-Item `
+            $revision.FullName `
+            "dlib\include\dlib\revision.h" `
+            -Force
+
+          # Find generated dlib.lib.
+          $lib = Get-ChildItem `
+            -Path "dlib\build" `
+            -Recurse `
+            -Filter "dlib.lib" `
+            -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+
+          if (-not $lib) {
+            Write-Error "dlib.lib not found!"
+
+            Write-Host "Available libraries:"
+            Get-ChildItem `
+              -Path "dlib\build" `
+              -Recurse `
+              -Filter "*.lib" |
+              Select-Object FullName
+
+            exit 1
+          }
+
+          Write-Host "Found dlib.lib: $($lib.FullName)"
+
+          Copy-Item `
+            $lib.FullName `
+            "dlib\lib\dlib.lib" `
+            -Force
+
+          # Verify expected layout.
+          Write-Host ""
+          Write-Host "Checking dlib layout..."
 
           if (-not (Test-Path "dlib\include\dlib\dnn.h")) {
             Write-Error "dnn.h not found!"
@@ -117,8 +173,14 @@ jobs:
             exit 1
           }
 
-          Write-Host "Found dnn.h"
-          Write-Host "Found revision.h"
+          if (-not (Test-Path "dlib\lib\dlib.lib")) {
+            Write-Error "dlib.lib not found!"
+            exit 1
+          }
+
+          Write-Host "dnn.h       OK"
+          Write-Host "revision.h  OK"
+          Write-Host "dlib.lib    OK"
 
       - name: Build PHP Extension
         uses: php/php-windows-builder/extension@v1
@@ -130,11 +192,48 @@ jobs:
           run-tests: true
           test-runner-args: "--show-diff tests"
 
+      - name: Prepare Windows artifact
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+
+          $dll = Get-ChildItem `
+            -Path . `
+            -Recurse `
+            -Filter "php_dlib.dll" `
+            -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+
+          if (-not $dll) {
+            Write-Error "php_dlib.dll not found!"
+
+            Write-Host "Available DLLs:"
+            Get-ChildItem `
+              -Path . `
+              -Recurse `
+              -Filter "*.dll" |
+              Select-Object FullName
+
+            exit 1
+          }
+
+          Write-Host "Found DLL: $($dll.FullName)"
+
+          Copy-Item `
+            $dll.FullName `
+            "dist\php-dlib-windows-${{ matrix.php-version }}-${{ matrix.ts }}.dll" `
+            -Force
+
+          Write-Host ""
+          Write-Host "Windows artifact:"
+          Get-ChildItem dist
+
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: php-dlib-windows-${{ matrix.php-version }}-${{ matrix.ts }}
           path: dist/*.dll
+          if-no-files-found: error
 
   macos:
     runs-on: macos-latest
