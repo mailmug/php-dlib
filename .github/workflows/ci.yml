@@ -101,6 +101,19 @@ jobs:
         shell: pwsh
         run: |
           Expand-Archive -Path dlib.zip -DestinationPath dlib -Force
+      
+          Write-Host "=== dlib directory ==="
+          Get-ChildItem dlib -Recurse -Directory | Select-Object FullName
+      
+          Write-Host "=== dnn.h ==="
+          $header = Get-ChildItem dlib -Recurse -Filter dnn.h
+      
+          if (-not $header) {
+            Write-Error "dnn.h NOT FOUND"
+            exit 1
+          }
+      
+          $header | Select-Object FullName
 
       - name: Build PHP Extension
         uses: php/php-windows-builder/extension@v1
