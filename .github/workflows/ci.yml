@@ -81,56 +81,14 @@ jobs:
       - name: Download dlib
         shell: pwsh
         run: |
-          $url = "https://wpdebuglog.com/wp-content/uploads/2021/10/dlib-3.zip"
-          $file = "dlib.zip"
-      
           Invoke-WebRequest `
-            -Uri $url `
-            -OutFile $file
-      
-          if (Test-Path $file) {
-            $size = (Get-Item $file).Length
-            Write-Host "Downloaded successfully: $file"
-            Write-Host "File size: $size bytes"
-          } else {
-            Write-Error "Download failed: $file was not created"
-            exit 1
-          }
+            -Uri "https://wpdebuglog.com/wp-content/uploads/2021/10/dlib-3.zip" `
+            -OutFile "dlib.zip"
 
       - name: Extract dlib
         shell: pwsh
         run: |
-          Remove-Item -Recurse -Force dlib -ErrorAction SilentlyContinue
-
           Expand-Archive -Path dlib.zip -DestinationPath dlib -Force
-
-          Write-Host "=== dnn.h locations ==="
-
-          $headers = Get-ChildItem `
-            -Path "${{ github.workspace }}\dlib" `
-            -Recurse `
-            -Filter "dnn.h"
-
-          if ($headers.Count -eq 0) {
-            Write-Error "dnn.h was not found in the extracted archive"
-            exit 1
-          }
-
-          foreach ($header in $headers) {
-            Write-Host "FOUND: $($header.FullName)"
-          }
-
-          Write-Host ""
-          Write-Host "=== Directory containing dnn.h ==="
-
-          $header = $headers | Select-Object -First 1
-          Write-Host $header.Directory.FullName
-
-          Write-Host ""
-          Write-Host "=== dlib root contents ==="
-
-          Get-ChildItem "${{ github.workspace }}\dlib\dlib" -Force |
-            Select-Object Name, FullName
 
       - name: Build PHP Extension
         uses: php/php-windows-builder/extension@v1
