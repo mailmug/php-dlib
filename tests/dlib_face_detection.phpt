@@ -9,7 +9,7 @@ if (getenv("SKIP_SLOW_TESTS")) die('skip slow test');
 <?php
 printf("Simple detection\n");
 $detected_faces = dlib_face_detection(__DIR__ . "/lenna.jpg");
-printf("Faces found = %d\n", count($detected_faces));
+printf("Faces found = %d\n", count((int)$detected_faces));
 foreach($detected_faces as $index => $detected_face) {
   printf("Face[%d] in bounding box (left=%d, top=%d, right=%d, bottom=%d)\n", $index,
     $detected_face["left"], $detected_face["top"], $detected_face["right"], $detected_face["bottom"]);
